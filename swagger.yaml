@@ -9,7 +9,7 @@ servers:
 #  - url: https://item-service:4009/api/v1
 #    description: Production server
 paths:
-  /items:
+  /item:
     get:
       summary: Get all items
       tags:
@@ -53,7 +53,7 @@ paths:
           description: Forbidden - Sigma access required
         '500':
           description: Internal server error
-  /items/{id}:
+  /item/{id}:
     get:
       summary: Get a specific item by ID
       tags:
