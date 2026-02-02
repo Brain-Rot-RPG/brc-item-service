@@ -64,7 +64,7 @@ export class PostgresItemRepository implements ItemRepository {
     const result = await this.pool.query("DELETE FROM items WHERE id = $1", [
       id,
     ]);
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   private mapRow(row: ItemRow): Item {
