@@ -1,0 +1,22 @@
+meta {
+  name: Update item
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:4009/api/v1/item/{{itemId}}
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Super Healing Potion",
+    "effect": {
+      "HP": 100,
+      "mana": 20
+    },
+    "price": 150
+  }
+}

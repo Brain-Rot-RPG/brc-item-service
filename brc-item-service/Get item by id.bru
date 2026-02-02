@@ -1,0 +1,15 @@
+meta {
+  name: Get item by id
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:4009/api/v1/item/{{itemId}}
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

@@ -150,20 +150,18 @@ components:
           type: string
           description: Name of the item
         effect:
-          type: string
-          description: Effect function of the item
+          type: object
+          description: Effect object with stat names and their values (e.g. {HP: 40, attack: 10})
+          additionalProperties:
+            type: integer
         price:
           type: integer
           description: Price of the item
-        imageId:
-          type: string
-          description: Image ID from the image service
       required:
         - id
         - name
         - effect
         - price
-        - imageId
     ItemInput:
       type: object
       properties:
@@ -171,20 +169,18 @@ components:
           type: string
           description: Name of the item
         effect:
-          type: string
-          description: Effect function of the item
+          type: object
+          description: Effect object with stat names and their values (e.g. {HP: 40, attack: 10})
+          additionalProperties:
+            type: integer
         price:
           type: integer
           description: Price of the item
           minimum: 0
-        imageId:
-          type: string
-          description: Image ID from the image service
       required:
         - name
         - effect
         - price
-        - imageId
   securitySchemes:
     SigmaAuth:
       type: http

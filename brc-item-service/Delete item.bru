@@ -1,0 +1,11 @@
+meta {
+  name: Delete item
+  type: http
+  seq: 5
+}
+
+delete {
+  url: http://localhost:4009/api/v1/item/{{itemId}}
+  body: none
+  auth: inherit
+}
