@@ -27,14 +27,14 @@ describe("PostgresItemRepository", () => {
     it("returns all items from database", async () => {
       const mockRows = [
         {
-          id: "uuid-1",
+          id: 1,
           name: "Potion",
           effect: JSON.stringify({ HP: 40 }),
           price: 50,
           created_at: new Date("2026-01-01"),
         },
         {
-          id: "uuid-2",
+          id: 2,
           name: "Ether",
           effect: JSON.stringify({ MP: 30 }),
           price: 75,
@@ -51,7 +51,7 @@ describe("PostgresItemRepository", () => {
       );
       expect(result).toHaveLength(2);
       expect(result[0]).toEqual({
-        id: "uuid-1",
+        id: 1,
         name: "Potion",
         effect: { HP: 40 },
         price: 50,
@@ -62,7 +62,7 @@ describe("PostgresItemRepository", () => {
     it("parses complex effect objects", async () => {
       const mockRows = [
         {
-          id: "uuid-1",
+          id: 1,
           name: "Elixir",
           effect: JSON.stringify({ HP: 100, MP: 50, Attack: 10 }),
           price: 200,
@@ -81,7 +81,7 @@ describe("PostgresItemRepository", () => {
   describe("getById", () => {
     it("returns item when found", async () => {
       const mockRow = {
-        id: "uuid-1",
+        id: 1,
         name: "Potion",
         effect: JSON.stringify({ HP: 40 }),
         price: 50,
@@ -90,14 +90,14 @@ describe("PostgresItemRepository", () => {
 
       mockQuery.mockResolvedValueOnce({ rows: [mockRow], rowCount: 1 });
 
-      const result = await repository.getById("uuid-1");
+      const result = await repository.getById(1);
 
       expect(mockQuery).toHaveBeenCalledWith(
         "SELECT * FROM items WHERE id = $1",
-        ["uuid-1"]
+        [1]
       );
       expect(result).toEqual({
-        id: "uuid-1",
+        id: 1,
         name: "Potion",
         effect: { HP: 40 },
         price: 50,
@@ -108,7 +108,7 @@ describe("PostgresItemRepository", () => {
     it("returns null when item not found", async () => {
       mockQuery.mockResolvedValueOnce({ rows: [], rowCount: 0 });
 
-      const result = await repository.getById("non-existent");
+      const result = await repository.getById(999);
 
       expect(result).toBeNull();
     });
@@ -117,7 +117,7 @@ describe("PostgresItemRepository", () => {
   describe("create", () => {
     it("creates an item with simple effect", async () => {
       const mockRow = {
-        id: "generated-uuid",
+        id: 1,
         name: "Potion",
         effect: JSON.stringify({ HP: 40 }),
         price: 50,
@@ -133,13 +133,8 @@ describe("PostgresItemRepository", () => {
       });
 
       expect(mockQuery).toHaveBeenCalledWith(
-        "INSERT INTO items (id, name, effect, price) VALUES ($1, $2, $3, $4) RETURNING *",
-        expect.arrayContaining([
-          expect.any(String),
-          "Potion",
-          JSON.stringify({ HP: 40 }),
-          50,
-        ])
+        "INSERT INTO items (name, effect, price) VALUES ($1, $2, $3) RETURNING *",
+        ["Potion", JSON.stringify({ HP: 40 }), 50]
       );
       expect(result.name).toBe("Potion");
       expect(result.effect).toEqual({ HP: 40 });
@@ -153,7 +148,7 @@ describe("PostgresItemRepository", () => {
         effect: JSON.stringify(complexEffect),
         price: 200,
         created_at: new Date("2026-01-01"),
-      };
+      };1
 
       mockQuery.mockResolvedValueOnce({ rows: [mockRow] });
 
@@ -170,7 +165,7 @@ describe("PostgresItemRepository", () => {
   describe("update", () => {
     it("updates an item and returns it", async () => {
       const mockRow = {
-        id: "uuid-1",
+        id: 1,
         name: "Mega Potion",
         effect: JSON.stringify({ HP: 100 }),
         price: 150,
@@ -179,7 +174,7 @@ describe("PostgresItemRepository", () => {
 
       mockQuery.mockResolvedValueOnce({ rows: [mockRow], rowCount: 1 });
 
-      const result = await repository.update("uuid-1", {
+      const result = await repository.update(1, {
         name: "Mega Potion",
         effect: { HP: 100 },
         price: 150,
@@ -187,17 +182,22 @@ describe("PostgresItemRepository", () => {
 
       expect(mockQuery).toHaveBeenCalledWith(
         "UPDATE items SET name = $2, effect = $3, price = $4 WHERE id = $1 RETURNING *",
-        ["uuid-1", "Mega Potion", JSON.stringify({ HP: 100 }), 150]
+        [1, "Mega Potion", JSON.stringify({ HP: 100 }), 150]
       );
-      expect(result).not.toBeNull();
-      expect(result?.name).toBe("Mega Potion");
-      expect(result?.effect).toEqual({ HP: 100 });
+
+      expect(result).toEqual({
+        id: 1,
+        name: "Mega Potion",
+        effect: { HP: 100 },
+        price: 150,
+        createdAt: new Date("2026-01-01"),
+      });
     });
 
     it("returns null when item not found", async () => {
       mockQuery.mockResolvedValueOnce({ rows: [], rowCount: 0 });
 
-      const result = await repository.update("non-existent", {
+      const result = await repository.update(999, {
         name: "Updated",
         effect: { HP: 100 },
         price: 150,
@@ -209,7 +209,7 @@ describe("PostgresItemRepository", () => {
     it("serializes effect object correctly", async () => {
       const newEffect = { MP: 50, Attack: 20 };
       const mockRow = {
-        id: "uuid-1",
+        id: 1,
         name: "Item",
         effect: JSON.stringify(newEffect),
         price: 100,
@@ -218,7 +218,7 @@ describe("PostgresItemRepository", () => {
 
       mockQuery.mockResolvedValueOnce({ rows: [mockRow], rowCount: 1 });
 
-      await repository.update("uuid-1", {
+      await repository.update(1, {
         name: "Item",
         effect: newEffect,
         price: 100,
@@ -233,11 +233,11 @@ describe("PostgresItemRepository", () => {
     it("returns true when item is deleted", async () => {
       mockQuery.mockResolvedValueOnce({ rowCount: 1 });
 
-      const result = await repository.delete("uuid-1");
+      const result = await repository.delete(1);
 
       expect(mockQuery).toHaveBeenCalledWith(
         "DELETE FROM items WHERE id = $1",
-        ["uuid-1"]
+        [1]
       );
       expect(result).toBe(true);
     });
@@ -245,7 +245,7 @@ describe("PostgresItemRepository", () => {
     it("returns false when item not found", async () => {
       mockQuery.mockResolvedValueOnce({ rowCount: 0 });
 
-      const result = await repository.delete("non-existent");
+      const result = await repository.delete(999);
 
       expect(result).toBe(false);
     });
@@ -253,7 +253,7 @@ describe("PostgresItemRepository", () => {
     it("handles null rowCount", async () => {
       mockQuery.mockResolvedValueOnce({ rowCount: null });
 
-      const result = await repository.delete("uuid-1");
+      const result = await repository.delete(1);
 
       expect(result).toBe(false);
     });

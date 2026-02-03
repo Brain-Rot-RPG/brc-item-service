@@ -1,5 +1,5 @@
 export interface Item {
-  id: string;
+  id: number;
   name: string;
   effect: Record<string, number>;
   price: number;

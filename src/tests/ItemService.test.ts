@@ -4,18 +4,19 @@ import { Item } from "../domain/entities/Item";
 
 class InMemoryItemRepository implements ItemRepository {
   private items: Item[] = [];
+  private idCounter = 1;
 
   async getAll(): Promise<Item[]> {
     return this.items;
   }
 
-  async getById(id: string): Promise<Item | null> {
+  async getById(id: number): Promise<Item | null> {
     return this.items.find((item) => item.id === id) ?? null;
   }
 
   async create(input: Omit<Item, "id" | "createdAt">): Promise<Item> {
     const created: Item = {
-      id: `id-${this.items.length + 1}`,
+      id: this.idCounter++,
       createdAt: new Date("2026-01-01T00:00:00Z"),
       ...input,
     };
@@ -24,7 +25,7 @@ class InMemoryItemRepository implements ItemRepository {
   }
 
   async update(
-    id: string,
+    id: number,
     input: Omit<Item, "id" | "createdAt">
   ): Promise<Item | null> {
     const index = this.items.findIndex((item) => item.id === id);
@@ -40,7 +41,7 @@ class InMemoryItemRepository implements ItemRepository {
     return updated;
   }
 
-  async delete(id: string): Promise<boolean> {
+  async delete(id: number): Promise<boolean> {
     const before = this.items.length;
     this.items = this.items.filter((item) => item.id !== id);
     return this.items.length < before;
@@ -170,7 +171,7 @@ describe("ItemService", () => {
     });
 
     it("returns null when item does not exist", async () => {
-      const found = await service.getById("non-existent-id");
+      const found = await service.getById(999);
       expect(found).toBeNull();
     });
   });
@@ -213,7 +214,7 @@ describe("ItemService", () => {
     });
 
     it("returns null when updating missing item", async () => {
-      const updated = await service.update("missing", {
+      const updated = await service.update(999, {
         name: "Mega Potion",
         effect: { HP: 100 },
         price: 150,
@@ -272,7 +273,7 @@ describe("ItemService", () => {
     });
 
     it("returns false when deleting non-existent item", async () => {
-      const deleted = await service.delete("non-existent-id");
+      const deleted = await service.delete(999);
       expect(deleted).toBe(false);
     });
 

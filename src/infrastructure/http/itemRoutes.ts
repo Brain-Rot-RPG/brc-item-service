@@ -16,7 +16,7 @@ export const createItemRouter = (service: ItemService): Router => {
 
   router.get("/item/:id", async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
+      const id = parseInt(req.params.id, 10);
       const result = await service.getById(id);
 
       if (!result) {
@@ -50,7 +50,7 @@ export const createItemRouter = (service: ItemService): Router => {
 
   router.put("/item/:id", async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
+      const id = parseInt(req.params.id, 10);
       const { name, effect, price } = req.body;
 
       if (!name || !effect || typeof effect !== "object" || price === undefined) {
@@ -74,7 +74,7 @@ export const createItemRouter = (service: ItemService): Router => {
 
   router.delete("/item/:id", async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
+      const id = parseInt(req.params.id, 10);
       const deleted = await service.delete(id);
 
       if (!deleted) {
